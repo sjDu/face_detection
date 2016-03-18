@@ -21,6 +21,12 @@
       Foo.closeVS();
     }
 
+    function openFdr(){
+
+      Foo.fdr.initFdrDiv('fdrControl', 320, 240);
+      Foo.fdr.startTrack();
+    }
+
   </script>
   <style>
   #video, #canvas {
@@ -31,11 +37,12 @@
 
   #canvas2 {
     margin-left: 230px;
-    margin-top: 460px;
+    margin-top: 120px;
   }
   </style>
 </head>
 <body>
+
 
     <div id="fdrControl" ></div>
     <div >
@@ -43,13 +50,13 @@
       <canvas id="canvas" width="320" height="240"></canvas>
  -->      
       <div>
-
         <canvas id="canvas2" width="320" height="240"></canvas>
         <p id="rect_info">image</p>  
         <img src="" alt="" id="image">
       </div>
     </div>
 
+    <button type="button" onclick="openFdr()">open</button>
     <button type="button" onclick="stop01()">stop</button>
     <button type="button" onclick="closeVideo()">close video</button>
 
