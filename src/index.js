@@ -183,6 +183,9 @@ class FDRControl {
 
 
         function samplingTimerByQuality(){
+            if(currentScore == 0){
+                return;
+            }
             if(captureTask.isReady){
                 var isBetter = currentScore > scoreList[0].score;
                 if(isBetter){
@@ -236,6 +239,9 @@ class FDRControl {
         }
 
         function samplingTimerByTime(){
+            if(currentScore == 0){
+                return;
+            }
             scoreList[currentIndex] = currentScore;
             imageObjList[currentIndex] = currentImageObj;
 
