@@ -234,17 +234,21 @@ class FDRControl {
             scoreList[currentIndex] = currentScore;
             imageObjList[currentIndex] = currentImageObj;
 
-            currentScore = 0;
-            currentImageObj = {};
-            sampleCount++;
-            captureTask.isReady = sampleCount > samplingNum;
-            if(captureTask.isReady){
-                onReady();
-                currentIndex = samplingNum - 1;
-                imageObjList.splice(0, 1);
-                scoreList.splice(0, 1);
-            }else{
-                currentIndex = sampleCount - 1;
+            prepareForNext();
+
+            function prepareForNext(){
+                currentScore = 0;
+                currentImageObj = {};
+                sampleCount++;
+                captureTask.isReady = sampleCount > samplingNum;
+                if(captureTask.isReady){
+                    onReady();
+                    currentIndex = samplingNum - 1;
+                    imageObjList.splice(0, 1);
+                    scoreList.splice(0, 1);
+                }else{
+                    currentIndex = sampleCount - 1;
+                }
             }
         }
 
