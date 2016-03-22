@@ -65,9 +65,10 @@ class FDRControl {
 
     }
 
-    startTrack() {
+    startTrack(onTrack) {
         console.log("startTrack ");
-        var context = this.canvas.getContext('2d');
+        var canvas = this.canvas;
+        var context = canvas.getContext('2d');
 
         var tracker = new tracking.ObjectTracker('face');
         tracker.setInitialScale(4);
@@ -83,21 +84,42 @@ class FDRControl {
             task: task,
         };
 
-        // tracker.on('track', function(event) {
-        //     context.clearRect(0, 0, canvas.width, canvas.height);
+        tracker.on('track', function(event) {
+            if(event.data.length == 0){
+                return;
+            }
+            context.clearRect(0, 0, canvas.width, canvas.height);
 
-        //     console.log("face detected:  \n" + JSON.stringify(event));
+            console.log("face detected:  \n" + JSON.stringify(event));
 
-        //     event.data.forEach(function(rect) {
-        //         getImageObj(rect, canvas, video);
-        //         drawSomething(rect, canvas, context, video);
-        //     });
-        // });
+            onTrack(event, this.canvas, this.video);
+
+            // event.data.forEach(function(rect) {
+            //     getImageObj(rect, canvas, video);
+            //     drawSomething(rect, canvas, context, video);
+            // });
+        }.bind(this));
 
     }
 
-    closeFdr(){
+    stopTrack(){
+        console.log("stopTrack");
+        this.tracker.task.stop();        
+        tracking.stopUserMedia();
+        this.tracker = null;
+        this.video.width = 0;
+        this.video.height = 0;
+        var context = this.canvas.getContext('2d');
+        context.fillStyle = '#000000'; 
+        context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        context.lineWidth= 0.5;               
+        context.font="20px Helvetica";
+        context.fillStyle = '#FFFFFF'; 
+        context.fillText("Camera Closed", this.canvas.width/4, this.canvas.height/2);
+    }
 
+    deinitFdrDiv(){
+        this.fdrDiv = null;
     }
 
     test() {
@@ -105,13 +127,154 @@ class FDRControl {
     }
 
     //samplingMode (ByTime or ByQuality)
-    startCaptureFaceImage(samplingNum, samplingTime, samplingMode) {
+    //samplingTime in milliseconds
+    startCaptureFaceImage(samplingNum, samplingTime, samplingMode, onReady) {
+        console.log("startCaptureFaceImage..")
+        
+        var imageObjList = [];
+        var scoreList = [];
 
+        var samplingInterval;
+        switch(samplingMode){
+            case "ByTime":
+                samplingInterval = setInterval(samplingTimerByTime, samplingTime);
+            break;
+            case "ByQuality":
+                samplingInterval = setInterval(samplingTimerByQuality, samplingTime);
+            break;
+            default:
+                samplingInterval = setInterval(samplingTimerByTime, samplingTime);
+            break;
+        }
+
+        var captureTask = {
+            samplingInterval: samplingInterval,
+            samplingNum: samplingNum,
+            samplingTime: samplingTime,
+            samplingMode: samplingMode,
+            isReady: false,
+            imageObjList: imageObjList,
+            scoreList: scoreList,
+        };
+        this.captureTask = captureTask;
+
+        var sampleCount = 1;
+        var currentScore = 0;
+        var currentImageObj = {};
+        var currentIndex = 0;
+
+
+        // synchronize problem?
+        this.startTrack( function(event, canvas, video){
+            event.data.forEach(function(rectangle){
+                drawRectangle(rectangle, canvas, video);
+                var score = getImageScore(rectangle, canvas);// toDo
+                if(currentScore < score){
+                    currentImageObj = getImageObj(rectangle, this.canvas, this.video);
+                    currentScore = score;
+                }
+                console.log("sampleCount = " + sampleCount +"\ncurrentScore = " + currentScore + "\ncurrentIndex = " + currentIndex)
+            }.bind(this));
+        }.bind(this));
+
+        function findOrder(score, list){
+            var i = 0;
+            while(i < list.length ){
+
+                i++;
+                var isFindOrder = score < list[i].score;
+                if(isFindOrder){
+                    break;
+                }
+            }
+            return i;
+        }
+
+        function samplingTimerByQuality(){
+            if(captureTask.isReady){
+                var isBetter = currentScore > scoreList[0].score;
+                if(isBetter){
+                    scoreList.splice(0, 1);
+                }
+            }
+            var scoreOrder = findOrder(currentScore, scoreList);
+            // put at i
+            scoreList.splice(scoreOrder, 0, {
+                score: currentScore,
+                imageIndex: currentIndex,
+            });
+            imageObjList[currentIndex] = currentImageObj;
+
+
+            currentScore = 0;
+            currentImageObj = {};
+            sampleCount++;
+            captureTask.isReady = sampleCount > samplingNum;
+            if(captureTask.isReady){
+                onReady();
+                currentIndex = scoreList[0].imageIndex;
+            }else{
+                currentIndex = sampleCount - 1;
+            }
+
+        }
+
+        function samplingTimerByTime(){
+            scoreList[currentIndex] = currentScore;
+            imageObjList[currentIndex] = currentImageObj;
+
+            currentScore = 0;
+            currentImageObj = {};
+            sampleCount++;
+            captureTask.isReady = sampleCount > samplingNum;
+            if(captureTask.isReady){
+                onReady();
+                currentIndex = samplingNum - 1;
+                imageObjList.splice(0, 1);
+                scoreList.splice(0, 1);
+            }else{
+                currentIndex = sampleCount - 1;
+            }
+        }
+
+        function drawRectangle(rectangle, canvas, video){
+            var context = canvas.getContext('2d');
+            context.lineWidth=5;
+            if(captureTask.isReady){
+                context.strokeStyle = '#1F1';                
+            }else{
+                context.strokeStyle = '#FF0000';                
+            }
+            context.strokeRect(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
+            context.font = '11px Helvetica';
+            context.fillStyle = "#fff";
+            context.fillText('x: ' + rectangle.x + 'px', rectangle.x + rectangle.width + 5, rectangle.y + 11);
+            context.fillText('y: ' + rectangle.y + 'px', rectangle.x + rectangle.width + 5, rectangle.y + 22);
+            context.fillText('x: ' + rectangle.x + 'px', rectangle.x + rectangle.width + 5, rectangle.y + 11);
+
+        }
     }
+
+    stopCaptureFaceImage(){
+        this.stopTrack();
+        clearInterval(this.captureTask.samplingInterval);
+        this.captureTask = null;
+    }
+
+    getFaceImageList(){
+
+        return this.captureTask.imageObjList;
+    }
+
+
 }
 
 function testa() {
     alert("testa");
+}
+
+function getImageScore(rectangle, canvas){
+    return Math.random();
 }
 
 function getImageObj(rectangle, canvas, video){
@@ -157,7 +320,8 @@ function getImageObj(rectangle, canvas, video){
     };
 }
 
-function drawSomething(rect, canvas, context, video) {
+function drawSomething(rect, canvas, video) {
+    var context = canvas.getContext('2d');
     context.strokeStyle = '#a64ceb';
     context.strokeRect(rect.x, rect.y, rect.width, rect.height);
     context.font = '11px Helvetica';
@@ -200,6 +364,7 @@ function drawSomething(rect, canvas, context, video) {
 }
 
 //ratio = 0.75
+// all x, y are relative to canvas
 function enlargeRect(rectangle, ratio, canvas) {
 
     var newX = rectangle.x - rectangle.width * ratio;
@@ -293,7 +458,7 @@ function openTrack(){
         console.log("event = \n" + JSON.stringify(event));
 
         event.data.forEach(function(rect) {
-            drawSomething(rect, canvas, context, context2, video);
+            drawSomething(rect, canvas, video);
         });
     });    
 }
