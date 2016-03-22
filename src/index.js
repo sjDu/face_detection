@@ -85,10 +85,10 @@ class FDRControl {
         };
 
         tracker.on('track', function(event) {
+            context.clearRect(0, 0, canvas.width, canvas.height);
             if(event.data.length == 0){
                 return;
             }
-            context.clearRect(0, 0, canvas.width, canvas.height);
 
             console.log("face detected:  \n" + JSON.stringify(event));
 
@@ -164,16 +164,20 @@ class FDRControl {
         var currentIndex = 0;
 
 
-        // synchronize problem?
+        // synchronize problem? js is single thread
         this.startTrack( function(event, canvas, video){
             event.data.forEach(function(rectangle){
                 drawRectangle(rectangle, canvas, video);
-                var score = getImageScore(rectangle, canvas);// toDo
-                if(currentScore < score){
-                    currentImageObj = getImageObj(rectangle, this.canvas, this.video);
-                    currentScore = score;
+                if(event.data.length == 1){
+                    var score = getImageScore(rectangle, canvas);// toDo
+                    if(currentScore < score){
+                        currentImageObj = getImageObj(rectangle, this.canvas, this.video);
+                        currentScore = score;
+                    }
+                    console.log("sampleCount = " + sampleCount +"\ncurrentScore = " + currentScore + "\ncurrentIndex = " + currentIndex)
+                }else {
+                    console.log("more than one object being detected!")
                 }
-                console.log("sampleCount = " + sampleCount +"\ncurrentScore = " + currentScore + "\ncurrentIndex = " + currentIndex)
             }.bind(this));
         }.bind(this));
 
@@ -189,6 +193,7 @@ class FDRControl {
                 add();
             }
 
+            testShowImages(captureTask);
             prepareForNext();
 
 
@@ -284,12 +289,43 @@ class FDRControl {
 
 }
 
+function testShowImages(captureTask){
+    console.log("testShowImages");
+
+    var itemListDiv = document.getElementById('itemList');
+    while (itemListDiv.firstChild) {
+        itemListDiv.removeChild(itemListDiv.firstChild);
+    }
+
+    console.log("length of scoreList = " + captureTask.scoreList.length);
+    captureTask.scoreList.forEach(function(item, index){
+
+        var div = document.createElement("div");
+        div.style.float = "left";
+        var image = new Image();
+        image.src = captureTask.imageObjList[item.imageIndex].dataURL;
+        div.appendChild(image);
+        var node = document.createElement("p");
+        var textnode = document.createTextNode("score: " + item.score);
+        node.appendChild(textnode);
+        div.appendChild(node);
+
+        itemListDiv.appendChild(div);
+
+
+    })
+}
+
+function getImg(data){
+    var img = " <img  width='400'  src='data:image/png;base64, " + data + "'/>  ";
+    return img;
+}
+
 function testa() {
     alert("testa");
 }
 
 function getImageScore(rectangle, canvas){
-
 
     var sizeScore = getSizeScore(rectangle, canvas);
 
@@ -541,6 +577,16 @@ window.onload = function() {
 
     // openTrack();
 };
+
+function test(){
+
+    var imageListDiv = document.getElementById('itemList');
+    // captureTask.scoreList.forEach(function(item, index){
+    //     itemListDiv.innerHTML += getImg(captureTask.imageObjList[item.imageIndex].dataURL);
+    //     itemListDiv.innerHTML += "<p>score: " + item.score + "</p>";
+
+    // })
+}
 
 module.exports = {
     sss: sss,

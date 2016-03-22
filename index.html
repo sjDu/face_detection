@@ -5,7 +5,6 @@
   <title>FDRControl test page</title>
   <!-- <link rel="stylesheet" href="assets/demo.css"> -->
 
-  <script src="./build/bundle.js" ></script>
   <!-- <script src="./import/tracking/tracking-min.js"></script> -->
   <!-- <script src="face-min.js"></script> -->
   <!-- <script src="../../dat-gui/build/dat.gui.min.js"></script> -->
@@ -55,16 +54,19 @@
 <!--       <video id="video" width="320" height="240" preload autoplay loop muted></video>
       <canvas id="canvas" width="320" height="240"></canvas>
  -->      
-      <div>
+      <!-- <div>
         <canvas id="canvas2" width="320" height="240"></canvas>
         <p id="rect_info">image</p>  
         <img src="" alt="" id="image">
       </div>
-    </div>
+    </div> -->
+
+    <div id="itemList"></div>
 
     <button type="button" onclick="openFdr()">open</button>
     <button type="button" onclick="stop01()">stop</button>
     <button type="button" onclick="closeVideo()">close video</button>
 
+  <script src="./build/bundle.js" ></script>
 </body>
 </html>
