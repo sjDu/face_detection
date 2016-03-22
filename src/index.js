@@ -289,7 +289,59 @@ function testa() {
 }
 
 function getImageScore(rectangle, canvas){
-    return Math.random();
+
+
+    var sizeScore = getSizeScore(rectangle, canvas);
+
+    var positionScore = getPositionScore(rectangle, canvas);
+
+
+    return sizeScore + positionScore;
+    // return Math.random();
+
+
+
+    function getSizeScore(rectangle, canvas){
+        var roiArea = rectangle.width * rectangle.height;
+        var canvasArea = canvas.width * canvas.height;
+
+        var ratio = roiArea/canvasArea;
+        var score;
+        var ratioTooBig = 0.9;
+        var ratioTooSmall = 0.1;
+        var maxScore = 10;
+        if(ratio > ratioTooBig || ratio < ratioTooSmall ){
+            score = 0;
+        } else {
+            var range = (ratioTooBig - ratioTooSmall);
+            score = ((ratio - ratioTooSmall)/range) * maxScore;
+        }
+        // }else if(ratio < 0.3){
+        //     score = 1;
+        // }else if(ratio < 0.5){
+        //     score = 2;
+        // }else if(ratio < 0.7){
+        //     score = 3;
+        // }
+        return score;
+    }
+
+    function getPositionScore(rectangle, canvas){
+        var roiCentral = {};
+        roiCentral.x = rectangle.x + (rectangle.width/2);
+        roiCentral.y = rectangle.y + (rectangle.height/2);
+
+        var vectorCentralToRoiCentral = {
+            x: roiCentral.x - canvas.width/2,
+            y: roiCentral.y - canvas.height/2,
+        }
+        var distSqrt = Math.pow(vectorCentralToRoiCentral.x, 2) + Math.pow(vectorCentralToRoiCentral.y, 2);
+        var maxDistSqrt = Math.pow(canvas.width/2, 2) + Math.pow(canvas.height/2, 2);
+
+        var maxScore = 10;
+        var score = ((maxDistSqrt - distSqrt)/maxDistSqrt) * maxScore;
+        return score;
+    }
 }
 
 function getImageObj(rectangle, canvas, video){
