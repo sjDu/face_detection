@@ -189,16 +189,8 @@ class FDRControl {
                 add();
             }
 
-            currentScore = 0;
-            currentImageObj = {};
-            sampleCount++;
-            captureTask.isReady = sampleCount > samplingNum;
-            if(captureTask.isReady){
-                onReady();
-                currentIndex = scoreList[0].imageIndex;
-            }else{
-                currentIndex = sampleCount - 1;
-            }
+            prepareForNext();
+
 
             function findOrder(score, list){
                 var i = 0;
@@ -213,15 +205,27 @@ class FDRControl {
                 return i;
             }
 
-
             function add(){
                 var scoreOrder = findOrder(currentScore, scoreList);
-                // put at i
+                // insert at scoreOrder
                 scoreList.splice(scoreOrder, 0, {
                     score: currentScore,
                     imageIndex: currentIndex,
                 });
                 imageObjList[currentIndex] = currentImageObj;
+            }
+
+            function prepareForNext(){
+                currentScore = 0;
+                currentImageObj = {};
+                sampleCount++;
+                captureTask.isReady = sampleCount > samplingNum;
+                if(captureTask.isReady){
+                    onReady();
+                    currentIndex = scoreList[0].imageIndex;
+                }else{
+                    currentIndex = sampleCount - 1;
+                }
             }
 
         }
