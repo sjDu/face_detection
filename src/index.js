@@ -177,34 +177,17 @@ class FDRControl {
             }.bind(this));
         }.bind(this));
 
-        function findOrder(score, list){
-            var i = 0;
-            while(i < list.length ){
-
-                i++;
-                var isFindOrder = score < list[i].score;
-                if(isFindOrder){
-                    break;
-                }
-            }
-            return i;
-        }
 
         function samplingTimerByQuality(){
             if(captureTask.isReady){
                 var isBetter = currentScore > scoreList[0].score;
                 if(isBetter){
                     scoreList.splice(0, 1);
+                    add();
                 }
+            }else{
+                add();
             }
-            var scoreOrder = findOrder(currentScore, scoreList);
-            // put at i
-            scoreList.splice(scoreOrder, 0, {
-                score: currentScore,
-                imageIndex: currentIndex,
-            });
-            imageObjList[currentIndex] = currentImageObj;
-
 
             currentScore = 0;
             currentImageObj = {};
@@ -215,6 +198,30 @@ class FDRControl {
                 currentIndex = scoreList[0].imageIndex;
             }else{
                 currentIndex = sampleCount - 1;
+            }
+
+            function findOrder(score, list){
+                var i = 0;
+                while(i < list.length ){
+
+                    var isFindOrder = score < list[i].score;
+                    if(isFindOrder){
+                        break;
+                    }
+                    i++;
+                }
+                return i;
+            }
+
+
+            function add(){
+                var scoreOrder = findOrder(currentScore, scoreList);
+                // put at i
+                scoreList.splice(scoreOrder, 0, {
+                    score: currentScore,
+                    imageIndex: currentIndex,
+                });
+                imageObjList[currentIndex] = currentImageObj;
             }
 
         }
