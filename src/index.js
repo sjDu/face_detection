@@ -18,7 +18,6 @@ function closeVS() {
 
 }
 
-var sss = 'aaa1278';
 
 
 
@@ -242,6 +241,7 @@ class FDRControl {
             scoreList[currentIndex] = currentScore;
             imageObjList[currentIndex] = currentImageObj;
 
+            testShowImages(captureTask);
             prepareForNext();
 
             function prepareForNext(){
@@ -285,7 +285,6 @@ class FDRControl {
     }
 
     getFaceImageList(){
-
         return this.captureTask.imageObjList;
     }
 
@@ -301,22 +300,41 @@ function testShowImages(captureTask){
     }
 
     console.log('length of scoreList = ' + captureTask.scoreList.length);
-    captureTask.scoreList.forEach(function(item, index){
+    
+    var imageObjList = fdrInstance.getFaceImageList();
+    var mode = captureTask.samplingMode;
+    console.log("mode=" + mode);
+    if(mode == 'ByQuality'){
+        captureTask.scoreList.forEach(function(item, index){
+            var div = document.createElement('div');
+            div.style.float = 'left';
+            var image = new Image();
+            image.src = imageObjList[item.imageIndex].dataURL;
+            div.appendChild(image);
+            var node = document.createElement('p');
+            var textnode = document.createTextNode('score: ' + item.score);
+            node.appendChild(textnode);
+            div.appendChild(node);
 
-        var div = document.createElement('div');
-        div.style.float = 'left';
-        var image = new Image();
-        image.src = captureTask.imageObjList[item.imageIndex].dataURL;
-        div.appendChild(image);
-        var node = document.createElement('p');
-        var textnode = document.createTextNode('score: ' + item.score);
-        node.appendChild(textnode);
-        div.appendChild(node);
+            itemListDiv.appendChild(div);
+        });
+    } else if(mode == 'ByTime'){
+        console.log("ByTime mode");
+        imageObjList.forEach(function(item, index){
+            var div = document.createElement('div');
+            div.style.float = 'left';
+            var image = new Image();
+            image.src = item.dataURL;
+            div.appendChild(image);
+            var node = document.createElement('p');
+            var textnode = document.createTextNode('score: ' + captureTask.scoreList[index]);
+            node.appendChild(textnode);
+            div.appendChild(node);
 
-        itemListDiv.appendChild(div);
-
-
-    });
+            itemListDiv.appendChild(div);
+        });
+        console.log('tes');
+    }
 }
 
 function getImg(data){
@@ -400,7 +418,7 @@ function getImageObj(rectangle, canvas, video){
     context.drawImage(video, 0, 0, width, height);
     context.strokeStyle = '#a64ceb';
     context.strokeRect(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
-    var rectEx = enlargeRect(rectangle, 0.75, { width: width, height: height });
+    var rectEx = enlargeRect(rectangle, 0.5, { width: width, height: height });
 
     // context.drawImage(backupCanvas, rectEx.x, rectEx.y, rectEx.width, rectEx.height, 0, 0, rectEx.width, rectEx.height);
 
@@ -589,10 +607,7 @@ window.onload = function() {
 
 
 module.exports = {
-    sss: sss,
     stop11: stop11,
     closeVS: closeVS,
     fdr: fdrInstance,
-    a: 'sad'
-
 };

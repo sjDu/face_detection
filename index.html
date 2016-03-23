@@ -24,11 +24,11 @@
     function openFdr(){
 
       Foo.fdr.initFdrDiv('fdrControl', 320, 240);
-      Foo.fdr.startCaptureFaceImage(5, 1000, 'ByQuality', function(){
-        console.log("is ready!!!")
+      Foo.fdr.startCaptureFaceImage(5, 1000, 'ByTime', function(){ //ByQuality ByTime
+        // console.log("is ready!!!")
         var tmp = Foo.fdr.captureTask.scoreList;
         // alert("is ready\nscoreList=" + JSON.stringify(tmp));
-        console.log(JSON.stringify(tmp));
+        // console.log(JSON.stringify(tmp));
       });
     }
 
