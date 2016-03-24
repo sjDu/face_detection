@@ -56,6 +56,9 @@ class FDRControl {
 
         this.fdrDiv = fdrDiv;
 
+        while (fdrDiv.firstChild) {
+            fdrDiv.removeChild(fdrDiv.firstChild);
+        }
         fdrDiv.appendChild(video);
         fdrDiv.appendChild(canvas);
 
@@ -303,7 +306,7 @@ function testShowImages(captureTask){
     
     var imageObjList = fdrInstance.getFaceImageList();
     var mode = captureTask.samplingMode;
-    console.log("mode=" + mode);
+    
     if(mode == 'ByQuality'){
         captureTask.scoreList.forEach(function(item, index){
             var div = document.createElement('div');
@@ -318,8 +321,7 @@ function testShowImages(captureTask){
 
             itemListDiv.appendChild(div);
         });
-    } else if(mode == 'ByTime'){
-        console.log("ByTime mode");
+    } else if(mode == 'ByTime'){    
         imageObjList.forEach(function(item, index){
             var div = document.createElement('div');
             div.style.float = 'left';
@@ -333,7 +335,6 @@ function testShowImages(captureTask){
 
             itemListDiv.appendChild(div);
         });
-        console.log('tes');
     }
 }
 
@@ -606,8 +607,10 @@ window.onload = function() {
 
 
 
-module.exports = {
-    stop11: stop11,
-    closeVS: closeVS,
-    fdr: fdrInstance,
-};
+// module.exports = {
+//     stop11: stop11,
+//     closeVS: closeVS,
+//     fdr: fdrInstance,
+// };
+
+module.exports = fdrInstance;
