@@ -1,7 +1,7 @@
 import { core } from '../import/tracking/tracking-min';
 
 var tracking = core;
-
+var isTest = false;
 
 function stop11() {
     // tracking.track('#abc', tracker, {camera: false});
@@ -89,7 +89,9 @@ class FDRControl {
                 return;
             }
 
-            console.log('face detected:  \n' + JSON.stringify(event));
+            if(isTest){
+                console.log('face detected:  \n' + JSON.stringify(event));
+            }
 
             onTrack(event, this.canvas, this.video);
 
@@ -118,6 +120,10 @@ class FDRControl {
     }
 
     deinitFdrDiv(){
+        var fdrDiv = this.fdrDiv;
+        while (fdrDiv.firstChild) {
+            fdrDiv.removeChild(fdrDiv.firstChild);
+        }
         this.fdrDiv = null;
     }
 
@@ -173,7 +179,9 @@ class FDRControl {
                         currentImageObj = getImageObj(rectangle, this.canvas, this.video);
                         currentScore = score;
                     }
-                    console.log('sampleCount = ' + sampleCount +'\ncurrentScore = ' + currentScore + '\ncurrentIndex = ' + currentIndex);
+                    if(isTest){
+                        console.log('sampleCount = ' + sampleCount +'\ncurrentScore = ' + currentScore + '\ncurrentIndex = ' + currentIndex);
+                    }
                 }else {
                     console.log('more than one object being detected!');
                 }
@@ -195,7 +203,9 @@ class FDRControl {
                 add();
             }
 
-            testShowImages(captureTask);
+            if(isTest){                
+                testShowImages(captureTask);
+            }
             prepareForNext();
 
 
@@ -244,7 +254,9 @@ class FDRControl {
             scoreList[currentIndex] = currentScore;
             imageObjList[currentIndex] = currentImageObj;
 
-            testShowImages(captureTask);
+            if(isTest){
+                testShowImages(captureTask);
+            }
             prepareForNext();
 
             function prepareForNext(){
@@ -417,8 +429,10 @@ function getImageObj(rectangle, canvas, video){
     backupCanvas.height = height;
     var context = backupCanvas.getContext('2d');
     context.drawImage(video, 0, 0, width, height);
-    context.strokeStyle = '#a64ceb';
-    context.strokeRect(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
+    if(isTest){
+        context.strokeStyle = '#a64ceb';
+        context.strokeRect(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
+    }
     var rectEx = enlargeRect(rectangle, 0.5, { width: width, height: height });
 
     // context.drawImage(backupCanvas, rectEx.x, rectEx.y, rectEx.width, rectEx.height, 0, 0, rectEx.width, rectEx.height);
@@ -556,9 +570,9 @@ function openTrack(){
     video.style.position = 'absolute';
     canvas.style.position = 'absolute';
 
+
     console.log('video.width = ' + video.width);
     console.log('canvas.width = ' + canvas.width);
-    console.log('video.nodeName.toLowerCase() = ' + video.nodeName.toLowerCase());
 
     var context = canvas.getContext('2d');
 
@@ -585,7 +599,9 @@ function openTrack(){
     tracker.on('track', function(event) {
         context.clearRect(0, 0, canvas.width, canvas.height);
 
-        console.log('event = \n' + JSON.stringify(event));
+        if(isTest){
+            console.log('event = \n' + JSON.stringify(event));
+        }
 
         event.data.forEach(function(rect) {
             drawSomething(rect, canvas, video);
