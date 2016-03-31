@@ -120,6 +120,10 @@ class FDRControl {
     }
 
     deinitFdrDiv(){
+        if(this.captureTask != null){
+            console.error("Cannot deinit when task is not stoped");
+            return;
+        }
         var fdrDiv = this.fdrDiv;
         while (fdrDiv.firstChild) {
             fdrDiv.removeChild(fdrDiv.firstChild);

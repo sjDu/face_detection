@@ -4,76 +4,55 @@
 <head>
     <meta charset="utf-8">
     <title>FDRControl test page</title>
-    <!-- <link rel="stylesheet" href="assets/demo.css"> -->
-
-    <!-- <script src="./import/tracking/tracking-min.js"></script> -->
-    <!-- <script src="face-min.js"></script> -->
-    <!-- <script src="../../dat-gui/build/dat.gui.min.js"></script> -->
-    <!-- <script src="assets/stats.min.js"></script> -->
 
     <script>
-        function stop01(){
-      // alert(JSON.stringify(Foo));
-      // Foo.stop11();
-      FdrControl.stopCaptureFaceImage();
-    };
-    
-    // function closeVideo(){
-    //   Foo.closeVS();
-    // }
-
-    function openFdr(){
-
-      FdrControl.initFdrDiv('fdrControl', 320, 240);
-      FdrControl.startCaptureFaceImage(5, 1000, 'ByTime', function(){ //ByQuality ByTime
-        // console.log("is ready!!!")
-        // var tmp = Foo.fdr.captureTask.scoreList;
-        // alert("is ready\nscoreList=" + JSON.stringify(tmp));
-        // console.log(JSON.stringify(tmp));
-      });
-    }
-    </script>
-    <style>
-        #video,
-        #canvas {
-            margin-left: 230px;
-            margin-top: 120px;
-            position: absolute;
+        function stopFdr(){
+            FdrControl.stopCaptureFaceImage();
+            FdrControl.deinitFdrDiv();
+        };
+        
+        function openFdr(){
+            FdrControl.initFdrDiv('targetFdDiv', 320, 240);
+            FdrControl.startCaptureFaceImage(5, 1000, 'ByTime', function(){ //ByQuality ByTime
+                console.log("is ready!!!")
+                testShowImages();
+            });
         }
         
-        #canvas2 {
-            margin-left: 230px;
-            margin-top: 120px;
+        function testShowImages(){
+            // console.log('testShowImages');
+
+            var itemListDiv = document.getElementById('itemList');
+            while (itemListDiv.firstChild) {
+                itemListDiv.removeChild(itemListDiv.firstChild);
+            }
+            
+            var imageObjList = FdrControl.getFaceImageList();
+                
+            imageObjList.forEach(function(item, index){
+                var div = document.createElement('div');
+                div.style.float = 'left';
+                var image = new Image();
+                image.src = item.dataURL;
+                itemListDiv.appendChild(image);
+            });
+            
         }
-    </style>
+    </script>
 </head>
 
 <body>
 
-
-    <div id="fdrControl">
+    <div id="targetFdDiv">
         <!--If you see this, FDRControl is not working.-->
     </div>
 
     <div>
-        <!--       <video id="video" width="320" height="240" preload autoplay loop muted></video>
-      <canvas id="canvas" width="320" height="240"></canvas>
- -->
-        <!-- <div>
-        <canvas id="canvas2" width="320" height="240"></canvas>
-        <p id="rect_info">image</p>  
-        <img src="" alt="" id="image">
-      </div>
-    </div> -->
-
         <div id="itemList"></div>
         <div style="clear:left">
             <button type="button" onclick="openFdr()">open</button>
-            <button type="button" onclick="stop01()">stop</button>
-            <!--<button type="button" onclick="closeVideo()">close video</button>-->
+            <button type="button" onclick="stopFdr()">stop</button>
         </div>
-
-
         <script src="./build/fdrControl.js"></script>
 </body>
 
