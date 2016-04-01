@@ -3,25 +3,6 @@ import { core } from '../import/tracking/tracking-min';
 var tracking = core;
 var isTest = false;
 
-function stop11() {
-    // tracking.track('#abc', tracker, {camera: false});
-
-    fdrInstance.tracker.task.stop();
-    console.log('stop face detection');
-}
-
-
-
-function closeVS() {
-    tracking.stopUserMedia();
-    fdrInstance.tracker = null;
-
-}
-
-
-
-
-
 
 class FDRControl {
     constructor() {
@@ -121,7 +102,7 @@ class FDRControl {
 
     deinitFdrDiv(){
         if(this.captureTask != null){
-            console.error("Cannot deinit when task is not stoped");
+            console.error('Cannot deinit when task is not stoped');
             return;
         }
         var fdrDiv = this.fdrDiv;
@@ -354,10 +335,6 @@ function testShowImages(captureTask){
     }
 }
 
-function getImg(data){
-    var img = ' <img  width="400"  src="data:image/png;base64, ' + data + '"/>  ';
-    return img;
-}
 
 function testa() {
     alert('testa');
@@ -557,80 +534,8 @@ function enlargeRect(rectangle, ratio, canvas) {
 
 }
 
-function openTrack(){
-    var video = document.createElement('video');
-    var canvas = document.createElement('canvas');
-    var fdrDiv = document.getElementById('fdrControl');
-    fdrDiv.width = 320;
-    fdrDiv.height = 240;
 
-    video.width = fdrDiv.width;
-    video.height = fdrDiv.height;
-    canvas.width = fdrDiv.width;
-    canvas.height = fdrDiv.height;
-
-
-    // video.style = style;  
-    video.style.position = 'absolute';
-    canvas.style.position = 'absolute';
-
-
-    console.log('video.width = ' + video.width);
-    console.log('canvas.width = ' + canvas.width);
-
-    var context = canvas.getContext('2d');
-
-    fdrDiv.appendChild(video);
-    fdrDiv.appendChild(canvas);
-
-
-    var canvas2 = document.getElementById('canvas2');
-    var context2 = canvas2.getContext('2d');
-    // context2.fillStyle = 'red';
-    // context2.fillRect(10, 10, 50, 50);
-
-
-    var tracker = new tracking.ObjectTracker('face');
-    tracker.setInitialScale(4);
-    tracker.setStepSize(2);
-    tracker.setEdgesDensity(0.1);
-
-
-
-    // task = tracking.track('#video', tracker, { camera: true });
-    var task = tracking.track(video, tracker, { camera: true });
-
-    tracker.on('track', function(event) {
-        context.clearRect(0, 0, canvas.width, canvas.height);
-
-        if(isTest){
-            console.log('event = \n' + JSON.stringify(event));
-        }
-
-        event.data.forEach(function(rect) {
-            drawSomething(rect, canvas, video);
-        });
-    });    
-}
 
 var fdrInstance = new FDRControl();
-window.onload = function() {
-
-    // fdrInstance.openFdrDiv('fdrControl', 320, 240);
-
-    // var video = document.getElementById('video');
-    // var canvas = document.getElementById('canvas');
-
-
-    // openTrack();
-};
-
-
-
-// module.exports = {
-//     stop11: stop11,
-//     closeVS: closeVS,
-//     fdr: fdrInstance,
-// };
 
 module.exports = fdrInstance;
