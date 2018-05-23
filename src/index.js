@@ -9,6 +9,7 @@ class FDRControl {
     constructor() {
         this.core = tracking;
         this.video = document.createElement('video');
+        this.video.autoplay = true
         this.canvas = document.createElement('canvas');
     }
 
@@ -57,7 +58,7 @@ class FDRControl {
         tracker.setEdgesDensity(0.1);
 
 
-        // task = tracking.track('#video', tracker, { camera: true });
+        // var task = tracking.track('#video', tracker, { camera: true });
         var task = tracking.track(this.video, tracker, { camera: true });
 
         this.tracker = {
@@ -88,7 +89,7 @@ class FDRControl {
     stopTrack() {
         console.log('stopTrack');
         this.tracker.task.stop();
-        tracking.stopUserMedia();
+        // tracking.stopUserMedia();
         this.tracker = null;
         this.video.width = 0;
         this.video.height = 0;
