@@ -1,25 +1,26 @@
-import { core } from '../import/tracking/tracking-min';
+import { core } from '../import/tracking';
 
 var tracking = core;
 var isTest = false;
 
+// console.log('sj test12', tracking)
 
 class FDRControl {
     constructor() {
-        this.core = core;
+        this.core = tracking;
         this.video = document.createElement('video');
         this.canvas = document.createElement('canvas');
     }
 
-    initFdrDiv(divId, width, height){
+    initFdrDiv(divId, width, height) {
         console.log('initFdrDiv..');
         // var video = document.createElement('video');
         // var canvas = document.createElement('canvas');        
         var fdrDiv = document.getElementById(divId);
         var video = this.video;
         var canvas = this.canvas;
-        fdrDiv.style.width = width+'px';
-        fdrDiv.style.height = height+'px';
+        fdrDiv.style.width = width + 'px';
+        fdrDiv.style.height = height + 'px';
 
         video.width = width;
         video.height = height;
@@ -50,7 +51,7 @@ class FDRControl {
         var canvas = this.canvas;
         var context = canvas.getContext('2d');
 
-        var tracker = new tracking.ObjectTracker('face');
+        var tracker = new tracking.ObjectTracker("face");
         tracker.setInitialScale(4);
         tracker.setStepSize(2);
         tracker.setEdgesDensity(0.1);
@@ -64,13 +65,13 @@ class FDRControl {
             task: task,
         };
 
-        tracker.on('track', function(event) {
+        tracker.on('track', function (event) {
             context.clearRect(0, 0, canvas.width, canvas.height);
-            if(event.data.length == 0){
+            if (event.data.length == 0) {
                 return;
             }
 
-            if(isTest){
+            if (isTest) {
                 console.log('face detected:  \n' + JSON.stringify(event));
             }
 
@@ -84,24 +85,24 @@ class FDRControl {
 
     }
 
-    stopTrack(){
+    stopTrack() {
         console.log('stopTrack');
-        this.tracker.task.stop();        
+        this.tracker.task.stop();
         tracking.stopUserMedia();
         this.tracker = null;
         this.video.width = 0;
         this.video.height = 0;
         var context = this.canvas.getContext('2d');
-        context.fillStyle = '#000000'; 
+        context.fillStyle = '#000000';
         context.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        context.lineWidth= 0.5;               
-        context.font='20px Helvetica';
-        context.fillStyle = '#FFFFFF'; 
-        context.fillText('Camera Closed', this.canvas.width/4, this.canvas.height/2);
+        context.lineWidth = 0.5;
+        context.font = '20px Helvetica';
+        context.fillStyle = '#FFFFFF';
+        context.fillText('Camera Closed', this.canvas.width / 4, this.canvas.height / 2);
     }
 
-    deinitFdrDiv(){
-        if(this.captureTask != null){
+    deinitFdrDiv() {
+        if (this.captureTask != null) {
             console.error('Cannot deinit when task is not stoped');
             return;
         }
@@ -120,21 +121,21 @@ class FDRControl {
     //samplingTime in milliseconds
     startCaptureFaceImage(samplingNum, samplingTime, samplingMode, onReady) {
         console.log('startCaptureFaceImage..');
-        
+
         var imageObjList = [];
         var scoreList = [];
 
         var samplingInterval;
-        switch(samplingMode){
-        case 'ByTime':
-            samplingInterval = setInterval(samplingTimerByTime, samplingTime);
-            break;
-        case 'ByQuality':
-            samplingInterval = setInterval(samplingTimerByQuality, samplingTime);
-            break;
-        default:
-            samplingInterval = setInterval(samplingTimerByTime, samplingTime);
-            break;
+        switch (samplingMode) {
+            case 'ByTime':
+                samplingInterval = setInterval(samplingTimerByTime, samplingTime);
+                break;
+            case 'ByQuality':
+                samplingInterval = setInterval(samplingTimerByQuality, samplingTime);
+                break;
+            default:
+                samplingInterval = setInterval(samplingTimerByTime, samplingTime);
+                break;
         }
 
         var captureTask = {
@@ -155,51 +156,51 @@ class FDRControl {
 
 
         // synchronize problem? js is single thread
-        this.startTrack( function(event, canvas, video){
-            event.data.forEach(function(rectangle){
+        this.startTrack(function (event, canvas, video) {
+            event.data.forEach(function (rectangle) {
                 drawRectangle(rectangle, canvas, video);
-                if(event.data.length == 1){
+                if (event.data.length == 1) {
                     var score = getImageScore(rectangle, canvas);// toDo
-                    if(currentScore < score){
+                    if (currentScore < score) {
                         currentImageObj = getImageObj(rectangle, this.canvas, this.video);
                         currentScore = score;
                     }
-                    if(isTest){
-                        console.log('sampleCount = ' + sampleCount +'\ncurrentScore = ' + currentScore + '\ncurrentIndex = ' + currentIndex);
+                    if (isTest) {
+                        console.log('sampleCount = ' + sampleCount + '\ncurrentScore = ' + currentScore + '\ncurrentIndex = ' + currentIndex);
                     }
-                }else {
+                } else {
                     console.log('more than one object being detected!');
                 }
             }.bind(this));
         }.bind(this));
 
 
-        function samplingTimerByQuality(){
-            if(currentScore == 0){
+        function samplingTimerByQuality() {
+            if (currentScore == 0) {
                 return;
             }
-            if(captureTask.isReady){
+            if (captureTask.isReady) {
                 var isBetter = currentScore > scoreList[0].score;
-                if(isBetter){
+                if (isBetter) {
                     scoreList.splice(0, 1);
                     add();
                 }
-            }else{
+            } else {
                 add();
             }
 
-            if(isTest){                
+            if (isTest) {
                 testShowImages(captureTask);
             }
             prepareForNext();
 
 
-            function findOrder(score, list){
+            function findOrder(score, list) {
                 var i = 0;
-                while(i < list.length ){
+                while (i < list.length) {
 
                     var isFindOrder = score < list[i].score;
-                    if(isFindOrder){
+                    if (isFindOrder) {
                         break;
                     }
                     i++;
@@ -207,7 +208,7 @@ class FDRControl {
                 return i;
             }
 
-            function add(){
+            function add() {
                 var scoreOrder = findOrder(currentScore, scoreList);
                 // insert at scoreOrder
                 scoreList.splice(scoreOrder, 0, {
@@ -217,56 +218,56 @@ class FDRControl {
                 imageObjList[currentIndex] = currentImageObj;
             }
 
-            function prepareForNext(){
+            function prepareForNext() {
                 currentScore = 0;
                 currentImageObj = {};
                 sampleCount++;
                 captureTask.isReady = sampleCount > samplingNum;
-                if(captureTask.isReady){
+                if (captureTask.isReady) {
                     onReady();
                     currentIndex = scoreList[0].imageIndex;
-                }else{
+                } else {
                     currentIndex = sampleCount - 1;
                 }
             }
 
         }
 
-        function samplingTimerByTime(){
-            if(currentScore == 0){
+        function samplingTimerByTime() {
+            if (currentScore == 0) {
                 return;
             }
             scoreList[currentIndex] = currentScore;
             imageObjList[currentIndex] = currentImageObj;
 
-            if(isTest){
+            if (isTest) {
                 testShowImages(captureTask);
             }
             prepareForNext();
 
-            function prepareForNext(){
+            function prepareForNext() {
                 currentScore = 0;
                 currentImageObj = {};
                 sampleCount++;
                 captureTask.isReady = sampleCount > samplingNum;
-                if(captureTask.isReady){
+                if (captureTask.isReady) {
                     onReady();
                     currentIndex = samplingNum - 1;
                     imageObjList.splice(0, 1);
                     scoreList.splice(0, 1);
-                }else{
+                } else {
                     currentIndex = sampleCount - 1;
                 }
             }
         }
 
-        function drawRectangle(rectangle, canvas, video){
+        function drawRectangle(rectangle, canvas, video) {
             var context = canvas.getContext('2d');
-            context.lineWidth=5;
-            if(captureTask.isReady){
-                context.strokeStyle = '#1F1';                
-            }else{
-                context.strokeStyle = '#FF0000';                
+            context.lineWidth = 5;
+            if (captureTask.isReady) {
+                context.strokeStyle = '#1F1';
+            } else {
+                context.strokeStyle = '#FF0000';
             }
             context.strokeRect(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
             context.font = '11px Helvetica';
@@ -278,20 +279,20 @@ class FDRControl {
         }
     }
 
-    stopCaptureFaceImage(){
+    stopCaptureFaceImage() {
         this.stopTrack();
         clearInterval(this.captureTask.samplingInterval);
         this.captureTask = null;
     }
 
-    getFaceImageList(){
+    getFaceImageList() {
         return this.captureTask.imageObjList;
     }
 
 
 }
 
-function testShowImages(captureTask){
+function testShowImages(captureTask) {
     console.log('testShowImages');
 
     var itemListDiv = document.getElementById('itemList');
@@ -300,12 +301,12 @@ function testShowImages(captureTask){
     }
 
     console.log('length of scoreList = ' + captureTask.scoreList.length);
-    
+
     var imageObjList = fdrInstance.getFaceImageList();
     var mode = captureTask.samplingMode;
-    
-    if(mode == 'ByQuality'){
-        captureTask.scoreList.forEach(function(item, index){
+
+    if (mode == 'ByQuality') {
+        captureTask.scoreList.forEach(function (item, index) {
             var div = document.createElement('div');
             div.style.float = 'left';
             var image = new Image();
@@ -318,8 +319,8 @@ function testShowImages(captureTask){
 
             itemListDiv.appendChild(div);
         });
-    } else if(mode == 'ByTime'){    
-        imageObjList.forEach(function(item, index){
+    } else if (mode == 'ByTime') {
+        imageObjList.forEach(function (item, index) {
             var div = document.createElement('div');
             div.style.float = 'left';
             var image = new Image();
@@ -340,7 +341,7 @@ function testa() {
     alert('testa');
 }
 
-function getImageScore(rectangle, canvas){
+function getImageScore(rectangle, canvas) {
 
     var sizeScore = getSizeScore(rectangle, canvas);
 
@@ -352,20 +353,20 @@ function getImageScore(rectangle, canvas){
 
 
 
-    function getSizeScore(rectangle, canvas){
+    function getSizeScore(rectangle, canvas) {
         var roiArea = rectangle.width * rectangle.height;
         var canvasArea = canvas.width * canvas.height;
 
-        var ratio = roiArea/canvasArea;
+        var ratio = roiArea / canvasArea;
         var score;
         var ratioTooBig = 0.9;
         var ratioTooSmall = 0.1;
         var maxScore = 10;
-        if(ratio > ratioTooBig || ratio < ratioTooSmall ){
+        if (ratio > ratioTooBig || ratio < ratioTooSmall) {
             score = 0;
         } else {
             var range = (ratioTooBig - ratioTooSmall);
-            score = ((ratio - ratioTooSmall)/range) * maxScore;
+            score = ((ratio - ratioTooSmall) / range) * maxScore;
         }
         // }else if(ratio < 0.3){
         //     score = 1;
@@ -377,30 +378,30 @@ function getImageScore(rectangle, canvas){
         return score;
     }
 
-    function getPositionScore(rectangle, canvas){
+    function getPositionScore(rectangle, canvas) {
         var roiCentral = {};
-        roiCentral.x = rectangle.x + (rectangle.width/2);
-        roiCentral.y = rectangle.y + (rectangle.height/2);
+        roiCentral.x = rectangle.x + (rectangle.width / 2);
+        roiCentral.y = rectangle.y + (rectangle.height / 2);
 
         var vectorCentralToRoiCentral = {
-            x: roiCentral.x - canvas.width/2,
-            y: roiCentral.y - canvas.height/2,
+            x: roiCentral.x - canvas.width / 2,
+            y: roiCentral.y - canvas.height / 2,
         };
         var distSqrt = Math.pow(vectorCentralToRoiCentral.x, 2) + Math.pow(vectorCentralToRoiCentral.y, 2);
-        var maxDistSqrt = Math.pow(canvas.width/2, 2) + Math.pow(canvas.height/2, 2);
+        var maxDistSqrt = Math.pow(canvas.width / 2, 2) + Math.pow(canvas.height / 2, 2);
 
         var maxScore = 10;
         var score;
-        if(distSqrt > 0.8 * maxDistSqrt ){
+        if (distSqrt > 0.8 * maxDistSqrt) {
             score = 0;
-        }else{
-            score = ((maxDistSqrt - distSqrt)/maxDistSqrt) * maxScore;
-        }        
+        } else {
+            score = ((maxDistSqrt - distSqrt) / maxDistSqrt) * maxScore;
+        }
         return score;
     }
 }
 
-function getImageObj(rectangle, canvas, video){
+function getImageObj(rectangle, canvas, video) {
 
     var width = canvas.width;
     var height = canvas.height;
@@ -410,7 +411,7 @@ function getImageObj(rectangle, canvas, video){
     backupCanvas.height = height;
     var context = backupCanvas.getContext('2d');
     context.drawImage(video, 0, 0, width, height);
-    if(isTest){
+    if (isTest) {
         context.strokeStyle = '#a64ceb';
         context.strokeRect(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
     }
