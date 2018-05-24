@@ -1,6 +1,6 @@
 {
   "name": "FDRControl",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "build": "webpack -p",
     "dev": "webpack --watch",
     "serve": "http-server -S",
-    "output": "rm -r output && mkdir output && npm run build && cp -r build output/build"
+    "output": "rm -r output && mkdir output && npm run build && cp -r build output/build && cp index.html output/"
   },
   "keywords": [],
   "author": "ShengJhan Du",
